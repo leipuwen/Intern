@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+<style>#container {
+	min-width: 300px;
+	max-width: 800px;
+	height: 400px;
+	margin: 0 auto;
+	border: 1px solid silver;
+}
+</style>	<script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/sankey.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/oldie.js"></script>
+</head>
+<body>
+	<div id="container"></div>
+
+	<script>
+	Highcharts.chart('container', {
+	title: {
+		text: 'Intern Demo'
+	},
+	credits:{
+		enabled: false
+	},
+	series: [{
+		keys: ['from', 'to', 'weight'],
+		point: {
+			// 鼠标划过节点时高亮相连的连接节点
+			events: {
+				mouseOver: function() {
+					if(this.isNode) {
+						Highcharts.each(this.linksFrom, function(p) {
+							var newColor = new Highcharts.color(p.color).setOpacity(1);
+							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+						});
+						Highcharts.each(this.linksTo, function(p) {
+							var newColor = new Highcharts.color(p.color).setOpacity(1);
+							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+						});
+					}
+				},
+				mouseOut: function() {
+					if(this.isNode) {
+						Highcharts.each(this.linksFrom, function(p) {
+							var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+						});
+						Highcharts.each(this.linksTo, function(p) {
+							var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+						});
+					}
+				}
+			}
+		},
+		data: [
+			['A', 'E', 5 ],
+			['A', 'F', 1 ],
+			['A', 'G', 1 ],
+			['A', 'H', 1 ],
+			['B', 'E', 1 ],
+			['B', 'F', 5 ],
+			['B', 'H', 1 ],
+			['C', 'E', 1 ],
+			['C', 'F', 1 ],
+			['C', 'G', 5 ],
+			['C', 'H', 1 ],
+			['D', 'E', 1 ],
+			['D', 'F', 1 ],
+			['D', 'G', 1 ],
+			['D', 'H', 5 ],
+			['E', 'J', 2 ],
+			['E', 'K', 1 ],
+			['E', 'M', 1 ],
+			['E', 'I', 3 ],
+			['F', 'J', 1 ],
+			['F', 'K', 3 ],
+			['F', 'L', 3 ],
+			['F', 'M', 3 ],
+			['F', 'I', 1 ],
+			['G', 'K', 1 ],
+			['G', 'M', 3 ],
+			['G', 'I', 1 ],
+			['H', 'J', 1 ],
+			['H', 'K', 1 ],
+			['H', 'M', 2 ],
+			['H', 'I', 7 ],
+			['I', 'O', 5 ],
+			['I', 'P', 1 ],
+			['I', 'R', 3 ],
+			['J', 'O', 5 ],
+			['J', 'P', 1 ],
+			['J', 'R', 3 ],
+			['K', 'O', 5 ],
+			['K', 'P', 1 ],
+			['K', 'R', 3 ],
+			['L', 'O', 5 ],
+			['L', 'P', 1 ],
+			['L', 'R', 3 ],
+			['M', 'O', 5 ],
+			['M', 'P', 1 ],
+			['M', 'R', 3 ]
+		],
+		type: 'sankey',
+		name: 'Strength'
+	}]
+});
+</script>
+</body>
+</html>
