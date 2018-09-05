@@ -1,115 +1,257 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="x-ua-compatible" content="ie=edge">
-<style>#container {
+	<style>#container {
 	min-width: 300px;
-	max-width: 800px;
-	height: 400px;
+	max-width: 1200px;
+	height: 1700px;
 	margin: 0 auto;
 	border: 1px solid silver;
 }
-</style>	<script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+</style>
+	<script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
 	<script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
 	<script src="https://img.hcharts.cn/highcharts/modules/sankey.js"></script>
 	<script src="https://img.hcharts.cn/highcharts/modules/oldie.js"></script>
+	<script type="text/javascript" src="scripts/d3.min.js"></script>
 </head>
+
 <body>
 	<div id="container"></div>
+</body>
 
-	<script>
-	Highcharts.chart('container', {
-	title: {
-		text: 'Intern Demo'
-	},
-	credits:{
-		enabled: false
-	},
-	series: [{
-		keys: ['from', 'to', 'weight'],
-		point: {
-			// 鼠标划过节点时高亮相连的连接节点
-			events: {
-				mouseOver: function() {
-					if(this.isNode) {
-						Highcharts.each(this.linksFrom, function(p) {
-							var newColor = new Highcharts.color(p.color).setOpacity(1);
-							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
-						});
-						Highcharts.each(this.linksTo, function(p) {
-							var newColor = new Highcharts.color(p.color).setOpacity(1);
-							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
-						});
-					}
-				},
-				mouseOut: function() {
-					if(this.isNode) {
-						Highcharts.each(this.linksFrom, function(p) {
-							var newColor = new Highcharts.color(p.color).setOpacity(0.5);
-							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
-						});
-						Highcharts.each(this.linksTo, function(p) {
-							var newColor = new Highcharts.color(p.color).setOpacity(0.5);
-							p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
-						});
-					}
+</html>
+
+<script>
+	//to obtain the raw data
+	var rawData = [];
+	var sumFields = ["q2", "q3", "s1", "s2", "s3", "q6", "q8", "q10", "q12"];
+	d3.csv("data_kaori/ver1.csv", function(csv) {
+		csv.forEach(function(d) {
+			var t = 0;
+			for (var i = 0; i < sumFields.length; i++) {
+				t += Number(d[sumFields[i]]);
+			}
+			if (t > 0) {
+				rawData.push(d);
+			}
+		})
+
+
+		//to calculate strength of the raw data
+		var dataCount = {};
+		for (var i = 0; i < rawData.length; i++) {
+			if (dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] == null) {
+				dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] = 1;
+			} else {
+				dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] += 1;
+			}
+
+			if (rawData[i].s1 < 99) {
+				if (dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] == null) {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] = 1;
+				} else {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] += 1;
+				}
+
+				if (dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] == null) {
+					dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] = 1;
+				} else {
+					dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] += 1;
 				}
 			}
-		},
-		data: [
-			['A', 'E', 5 ],
-			['A', 'F', 1 ],
-			['A', 'G', 1 ],
-			['A', 'H', 1 ],
-			['B', 'E', 1 ],
-			['B', 'F', 5 ],
-			['B', 'H', 1 ],
-			['C', 'E', 1 ],
-			['C', 'F', 1 ],
-			['C', 'G', 5 ],
-			['C', 'H', 1 ],
-			['D', 'E', 1 ],
-			['D', 'F', 1 ],
-			['D', 'G', 1 ],
-			['D', 'H', 5 ],
-			['E', 'J', 2 ],
-			['E', 'K', 1 ],
-			['E', 'M', 1 ],
-			['E', 'I', 3 ],
-			['F', 'J', 1 ],
-			['F', 'K', 3 ],
-			['F', 'L', 3 ],
-			['F', 'M', 3 ],
-			['F', 'I', 1 ],
-			['G', 'K', 1 ],
-			['G', 'M', 3 ],
-			['G', 'I', 1 ],
-			['H', 'J', 1 ],
-			['H', 'K', 1 ],
-			['H', 'M', 2 ],
-			['H', 'I', 7 ],
-			['I', 'O', 5 ],
-			['I', 'P', 1 ],
-			['I', 'R', 3 ],
-			['J', 'O', 5 ],
-			['J', 'P', 1 ],
-			['J', 'R', 3 ],
-			['K', 'O', 5 ],
-			['K', 'P', 1 ],
-			['K', 'R', 3 ],
-			['L', 'O', 5 ],
-			['L', 'P', 1 ],
-			['L', 'R', 3 ],
-			['M', 'O', 5 ],
-			['M', 'P', 1 ],
-			['M', 'R', 3 ]
-		],
-		type: 'sankey',
-		name: 'Strength'
-	}]
-});
+
+			if (rawData[i].s2 < 99) {
+				if (dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] == null) {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] = 1;
+				} else {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] += 1;
+				}
+				if (dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] == null) {
+					dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] = 1;
+				} else {
+					dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] += 1;
+				}
+			}
+
+			if (rawData[i].s3 < 99) {
+				if (dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] == null) {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] = 1;
+				} else {
+					dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] += 1;
+				}
+				if (dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] == null) {
+					dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] = 1;
+				} else {
+					dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] += 1;
+				}
+			}
+
+			if (rawData[i].s1 > 98 && rawData[i].s2 > 98 && rawData[i].s3 > 98) {
+				if (dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] == null) {
+					dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] = 1;
+				} else {
+					dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] += 1;
+				}
+				if (dataCount["sNull" + "-" + "q6_" + rawData[i].q6] == null) {
+					dataCount["sNull" + "-" + "q6_" + rawData[i].q6] = 1;
+				} else {
+					dataCount["sNull" + "-" + "q6_" + rawData[i].q6] += 1;
+				}
+			}
+			//
+			// if (rawData[i].s1 > 98 && rawData[i].s2 > 98 && rawData[i].s3 > 98) {
+			// 	if (dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] == null && dataCount["sNull" + "-" + rawData[i].q6] == null) {
+			// 		dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] = 1;
+			// 		dataCount["sNull" + "-" + "q6_" + rawData[i].q6] = 1;
+			// 	} else {
+			// 		dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] += 1;
+			// 		dataCount["sNull" + "-" + "q6_" + rawData[i].q6] += 1;
+			// 	}
+			// }
+
+			if (dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] == null) {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] = 1;
+			} else {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] += 1;
+			}
+
+			if (dataCount["q6_" + rawData[i].q6 + "-" + "q10_" + rawData[i].q10] == null) {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q10_" + rawData[i].q10] = 1;
+			} else {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q10_" + rawData[i].q10] += 1;
+			}
+
+			if (dataCount["q6_" + rawData[i].q6 + "-" + "q12_" + rawData[i].q12] == null) {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q12_" + rawData[i].q12] = 1;
+			} else {
+				dataCount["q6_" + rawData[i].q6 + "-" + "q12_" + rawData[i].q12] += 1;
+			}
+		}
+
+
+		var data = [];
+		for (var i = 0; i < 25; i++) {
+			for (var j = 0; j < 25; j++) {
+				if (dataCount["q2_" + i + "-" + "q3_" + j] != null) {
+					data.push(["q2_" + i, "q3_" + j, dataCount["q2_" + i + "-" + "q3_" + j]]);
+				}
+				if (dataCount["q3_" + i + "-" + "s1_" + j] != null) {
+					data.push(["q3_" + i, "s1_" + j, dataCount["q3_" + i + "-" + "s1_" + j]]);
+				}
+				if (dataCount["s1_" + i + "-" + "q6_" + j] != null) {
+					data.push(["s1_" + i, "q6_" + j, dataCount["s1_" + i + "-" + "q6_" + j]]);
+				}
+				if (dataCount["q3_" + i + "-" + "s2_" + j] != null) {
+					data.push(["q3_" + i, "s2_" + j, dataCount["q3_" + i + "-" + "s2_" + j]]);
+				}
+				if (dataCount["s2_" + i + "-" + "q6_" + j] != null) {
+					data.push(["s2_" + i, "q6_" + j, dataCount["s2_" + i + "-" + "q6_" + j]]);
+				}
+				if (dataCount["q3_" + i + "-" + "s3_" + j] != null) {
+					data.push(["q3_" + i, "s3_" + j, dataCount["q3_" + i + "-" + "s3_" + j]]);
+				}
+				if (dataCount["s3_" + i + "-" + "q6_" + j] != null) {
+					data.push(["s3_" + i, "q6_" + j, dataCount["s3_" + i + "-" + "q6_" + j]]);
+				}
+				if (dataCount["q6_" + i + "-" + "q8_" + j] != null) {
+					data.push(["q6_" + i, "q8_" + j, dataCount["q6_" + i + "-" + "q8_" + j]]);
+				}
+				// if(dataCount["q6_" + i + "-" + "q10_" + j] != null) {
+				// 	data.push(["q6_" + i, "q10_" + j, dataCount["q6_" + i + "-" + "q10_" + j]]);
+				// }
+				// if(dataCount["q6_" + i + "-" + "q12_" + j] != null) {
+				// 	data.push(["q6_" + i, "q12_" + j, dataCount["q6_" + i + "-" + "q12_" + j]]);
+				// }
+			}
+			if (dataCount["q3_" + i + "-" + "sNull"] != null) {
+				data.push(["q3_" + i, "sNull", dataCount["q3_" + i + "-" + "sNull"]]);
+			}
+			if (dataCount["sNull" + "-" + "q6_" + i] != null) {
+				data.push(["sNull", "q6_" + i, dataCount["sNull" + "-" + "q6_" + i]]);
+			}
+		}
+
+		console.log(data)
+		// //person - person integrated graph
+		// for (var i = 0; i < 100; i++) {
+		// 	data.push(["q2_" + rawData[i].q2, "q3_" + rawData[i].q3]);
+		// 	if (rawData[i].s1 < 99) {
+		// 		data.push(["q3_" + rawData[i].q3, "s1_" + rawData[i].s1, 0.05]);
+		// 		data.push(["s1_" + rawData[i].s1, "q6_" + rawData[i].q6, 0.05]);
+		// 	}
+		// 	if (rawData[i].s2 < 99) {
+		// 		data.push(["q3_" + rawData[i].q3, "s2_" + rawData[i].s2, 0.05]);
+		// 		data.push(["s2_" + rawData[i].s2, "q6_" + rawData[i].q6, 0.05]);
+		// 	}
+		// 	if (rawData[i].s3 < 99) {
+		// 		data.push(["q3_" + rawData[i].q3, "s3_" + rawData[i].s3, 0.05]);
+		// 		data.push(["s3_" + rawData[i].s3, "q6_" + rawData[i].q6, 0.05]);
+		// 	}
+		// 	if (rawData[i].s1 > 98 && rawData[i].s2 > 98 && rawData[i].s3 > 98) {
+		// 		data.push(["q3_" + rawData[i].q3, "sNull", 0.03]);
+		// 		data.push(["sNull", "q6_" + rawData[i].q6, 0.05]);
+		// 	}
+		// 	data.push(["q6_" + rawData[i].q6, "q8_" + rawData[i].q8, 0.05]);
+		// 	data.push(["q6_" + rawData[i].q6, "q10_" + rawData[i].q10, 0.05]);
+		// 	data.push(["q6_" + rawData[i].q6, "q12_" + rawData[i].q12, 0.05]);
+		// }
+
+
+
+		Highcharts.chart('container', {
+			title: {
+				text: 'Internship Demo ver.1.5'
+			},
+			credits: {
+				enabled: false
+			},
+			chart: {
+				width: 1200,
+				height: 1700
+			},
+			series: [{
+				keys: ['from', 'to', 'weight'],
+				point: {
+					// 鼠标划过节点时高亮相连的连接节点
+					events: {
+						mouseOver: function() {
+							if (this.isNode) {
+								Highcharts.each(this.linksFrom, function(p) {
+									var newColor = new Highcharts.color(p.color).setOpacity(1);
+									p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+								});
+								Highcharts.each(this.linksTo, function(p) {
+									var newColor = new Highcharts.color(p.color).setOpacity(1);
+									p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+								});
+							}
+						},
+						mouseOut: function() {
+							if (this.isNode) {
+								Highcharts.each(this.linksFrom, function(p) {
+									var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+									p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+								});
+								Highcharts.each(this.linksTo, function(p) {
+									var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+									p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+								});
+							}
+						}
+					}
+				},
+				data: data,
+				type: 'sankey',
+				name: 'Strength'
+			}]
+		});
+	})
 </script>
-</body>
-</html>
+
+<script>
+</script>
