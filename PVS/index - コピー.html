@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link href="lib/bootstrap-slider.min.css" rel="stylesheet" />
+
+  <title>PVS</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/css.css" rel="stylesheet">
+
+  <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+  <script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+  <script src="https://img.hcharts.cn/highcharts/modules/sankey.js"></script>
+  <script src="https://img.hcharts.cn/highcharts/modules/oldie.js"></script>
+  <script type="text/javascript" src="scripts/d3.min.js"></script>
+  <script src="js/jquery-2.1.4.min.js"></script>
+  <script src="lib/bootstrap-slider.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+
+</head>
+
+<body>
+
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+      <ul class="sidebar-nav">
+        <li class="sidebar-brand">
+          <a>Control Panel</a>
+        </li>
+        <li>
+          <a id="run" href="#">Run</a>
+        </li>
+        <li>
+          <a href="#">Path Adjustment</a>
+        </li>
+        <li>
+          <input id="ex2" type="text" class="span2" value="" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="[0,200]"/>
+        </li>
+        <li>
+          <a href="#">Search Factor</a>
+        </li>
+        <li>
+          <form id="searchBox" role="form">
+            <div class="form-group">
+              <select class="form-control input-sm" id="selectLayer">
+                <option>select all</option>
+                <option>q2</option>
+                <option>q3</option>
+                <option>s1</option>
+                <option>s2</option>
+                <option>s3</option>
+                <option>s</option>
+                <option>q6</option>
+                <option>q8</option>
+                <option>q10</option>
+                <option>q12</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select class="form-control input-sm" id="selectFactor">
+                <option>select all</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+                <option>9</option>
+                <option>10</option>
+                <option>11</option>
+                <option>12</option>
+                <option>13</option>
+                <option>14</option>
+                <option>15</option>
+                <option>16</option>
+                <option>17</option>
+                <option>18</option>
+                <option>19</option>
+                <option>20</option>
+                <option>21</option>
+                <option>22</option>
+                <option>23</option>
+                <option>24</option>
+                <option>Null</option>
+              </select>
+            </div>
+          </form>
+        </li>
+        <li>
+          <a href="#">About us</a>
+        </li>
+        <li>
+          <form id="about" role="form">
+            <div class="form-group">
+              <select class="form-control " id="introduction">
+                <option>q2:刺激</option>
+                <option>q3: 印象</option>
+                <option>s1</option>
+                <option>s2</option>
+                <option>s3</option>
+                <option>s</option>
+                <option>q6</option>
+                <option>q8</option>
+                <option>q10</option>
+                <option>q12</option>
+              </select>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+    <!-- /#sidebar-wrapper -->
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+      <div class="container-fluid">
+        <h1>Panasonic - Visual Emotional Analytics System  Ver 2.1</h1>
+        <h5> Supported by EcoSolution Cooperation.</h5>
+        <a href="#menu-toggle" class="btn" id="menu-toggle">Control Panel</a>
+        <div id="container"></div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+
+<script>
+  //to obtain the raw data
+  var rawData = [];
+  var selectedData = [];
+  var sumFields = ["q2", "q3", "s1", "s2", "s3", "q6", "q8", "q10", "q12"]; //layer
+  var data = [];
+  var dataCount = {};
+  var chart;
+  var signForSelect = 0;
+  var min = -1;
+  var max = 201;
+  var layer;
+  var factor;
+
+
+  function selectpath(min, max) {
+    data = [];
+    for (var i = 1; i < 25; i++) {
+      for (var j = 1; j < 25; j++) {
+        if (dataCount["q2_" + i + "-" + "q3_" + j] != null && dataCount["q2_" + i + "-" + "q3_" + j] < max && dataCount["q2_" + i + "-" + "q3_" + j] > min) {
+          data.push(["q2_" + i, "q3_" + j, dataCount["q2_" + i + "-" + "q3_" + j]]);
+        } else if (dataCount["q2_" + i + "-" + "q3_" + j] != null) {
+          data.push(["q2_" + i, "q3_" + j, 0.01]);
+        }
+        if (dataCount["q3_" + i + "-" + "s1_" + j] != null && dataCount["q3_" + i + "-" + "s1_" + j] < max && dataCount["q3_" + i + "-" + "s1_" + j] > min) {
+          data.push(["q3_" + i, "s1_" + j, dataCount["q3_" + i + "-" + "s1_" + j]]);
+        } else if (dataCount["q3_" + i + "-" + "s1_" + j] != null) {
+          data.push(["q3_" + i, "s1_" + j, 0.01]);
+        }
+        if (dataCount["s1_" + i + "-" + "q6_" + j] != null && dataCount["s1_" + i + "-" + "q6_" + j] < max && dataCount["s1_" + i + "-" + "q6_" + j] > min) {
+          data.push(["s1_" + i, "q6_" + j, dataCount["s1_" + i + "-" + "q6_" + j]]);
+        } else if (dataCount["s1_" + i + "-" + "q6_" + j] != null) {
+          data.push(["s1_" + i, "q6_" + j, 0.01]);
+        }
+        if (dataCount["q3_" + i + "-" + "s2_" + j] != null && dataCount["q3_" + i + "-" + "s2_" + j] < max && dataCount["q3_" + i + "-" + "s2_" + j] > min) {
+          data.push(["q3_" + i, "s2_" + j, dataCount["q3_" + i + "-" + "s2_" + j]]);
+        } else if (dataCount["q3_" + i + "-" + "s2_" + j] != null) {
+          data.push(["q3_" + i, "s2_" + j, 0.01]);
+        }
+        if (dataCount["s2_" + i + "-" + "q6_" + j] != null && dataCount["s2_" + i + "-" + "q6_" + j] < max && dataCount["s2_" + i + "-" + "q6_" + j] > min) {
+          data.push(["s2_" + i, "q6_" + j, dataCount["s2_" + i + "-" + "q6_" + j]]);
+        } else if (dataCount["s2_" + i + "-" + "q6_" + j] != null) {
+          data.push(["s2_" + i, "q6_" + j, 0.01]);
+        }
+        if (dataCount["q3_" + i + "-" + "s3_" + j] != null && dataCount["q3_" + i + "-" + "s3_" + j] < max && dataCount["q3_" + i + "-" + "s3_" + j] > min) {
+          data.push(["q3_" + i, "s3_" + j, dataCount["q3_" + i + "-" + "s3_" + j]]);
+        } else if (dataCount["q3_" + i + "-" + "s3_" + j] != null) {
+          data.push(["q3_" + i, "s3_" + j, 0.01]);
+        }
+        if (dataCount["s3_" + i + "-" + "q6_" + j] != null && dataCount["s3_" + i + "-" + "q6_" + j] < max && dataCount["s3_" + i + "-" + "q6_" + j] > min) {
+          data.push(["s3_" + i, "q6_" + j, dataCount["s3_" + i + "-" + "q6_" + j]]);
+        } else if (dataCount["s3_" + i + "-" + "q6_" + j] != null) {
+          data.push(["s3_" + i, "q6_" + j, 0.01]);
+        }
+        if (dataCount["q6_" + i + "-" + "q8_" + j] != null && dataCount["q6_" + i + "-" + "q8_" + j] < max && dataCount["q6_" + i + "-" + "q8_" + j] > min) {
+          data.push(["q6_" + i, "q8_" + j, dataCount["q6_" + i + "-" + "q8_" + j]]);
+        } else if (dataCount["q6_" + i + "-" + "q8_" + j] != null) {
+          data.push(["q6_" + i, "q8_" + j, 0.01]);
+        }
+        if (dataCount["q8_" + i + "-" + "q10_" + j] != null && dataCount["q8_" + i + "-" + "q10_" + j] < max && dataCount["q8_" + i + "-" + "q10_" + j] > min) {
+          data.push(["q8_" + i, "q10_" + j, dataCount["q8_" + i + "-" + "q10_" + j]]);
+        } else if (dataCount["q8_" + i + "-" + "q10_" + j] != null) {
+          data.push(["q8_" + i, "q10_" + j, 0.01]);
+        }
+        if (dataCount["q10_" + i + "-" + "q12_" + j] != null && dataCount["q10_" + i + "-" + "q12_" + j] < max && dataCount["q10_" + i + "-" + "q12_" + j] > min) {
+          data.push(["q10_" + i, "q12_" + j, dataCount["q10_" + i + "-" + "q12_" + j]]);
+        } else if (dataCount["q10_" + i + "-" + "q12_" + j] != null) {
+          data.push(["q10_" + i, "q12_" + j, 0.01]);
+        }
+      }
+      if (dataCount["q3_" + i + "-" + "sNull"] != null && dataCount["q3_" + i + "-" + "sNull"] < max && dataCount["q3_" + i + "-" + "sNull"] > min) {
+        data.push(["q3_" + i, "sNull", dataCount["q3_" + i + "-" + "sNull"]]);
+      } else if (dataCount["q3_" + i + "-" + "sNull_" + j] != null) {
+        data.push(["q3_" + i, "sNull_" + j, 0.01]);
+      }
+      if (dataCount["sNull" + "-" + "q6_" + i] != null && dataCount["sNull" + "-" + "q6_" + i] < max && dataCount["sNull" + "-" + "q6_" + i] > min) {
+        data.push(["sNull", "q6_" + i, dataCount["sNull" + "-" + "q6_" + i]]);
+      } else if (dataCount["sNull_" + i + "-" + "q6_" + j] != null) {
+        data.push(["sNull_" + i, "q6_" + j, 0.01]);
+      }
+    }
+  }
+
+  function dataSelection(layer, factor) {
+    selectedData = [];
+    if (layer == null || layer == "select all") {
+      signForSelect = 0;
+    } else {
+      signForSelect = 1;
+      selectedData = [];
+      for (var i = 0; i < rawData.length; i++) {
+        if (layer != "s") {
+          if (rawData[i][layer] == factor) {
+            selectedData.push(rawData[i]);
+          }
+        } else {
+          if (rawData[i]["s1"] > 98 && rawData[i]["s2"] > 98 && rawData[i]["s3"] > 98) {
+            selectedData.push(rawData[i]);
+          }
+        }
+      }
+    }
+    dataCount = [];
+    if (signForSelect == 0) {
+      for (var i = 0; i < rawData.length; i++) {
+        if (dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] == null) {
+          dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] = 1;
+        } else {
+          dataCount["q2_" + rawData[i].q2 + "-" + "q3_" + rawData[i].q3] += 1;
+        }
+
+        if (rawData[i].s1 < 99) {
+          if (dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] == null) {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] = 1;
+          } else {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s1_" + rawData[i].s1] += 1;
+          }
+
+          if (dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] == null) {
+            dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] = 1;
+          } else {
+            dataCount["s1_" + rawData[i].s1 + "-" + "q6_" + rawData[i].q6] += 1;
+          }
+        }
+
+        if (rawData[i].s2 < 99) {
+          if (dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] == null) {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] = 1;
+          } else {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s2_" + rawData[i].s2] += 1;
+          }
+          if (dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] == null) {
+            dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] = 1;
+          } else {
+            dataCount["s2_" + rawData[i].s2 + "-" + "q6_" + rawData[i].q6] += 1;
+          }
+        }
+
+        if (rawData[i].s3 < 99) {
+          if (dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] == null) {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] = 1;
+          } else {
+            dataCount["q3_" + rawData[i].q3 + "-" + "s3_" + rawData[i].s3] += 1;
+          }
+          if (dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] == null) {
+            dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] = 1;
+          } else {
+            dataCount["s3_" + rawData[i].s3 + "-" + "q6_" + rawData[i].q6] += 1;
+          }
+        }
+
+        if (rawData[i].s1 > 98 && rawData[i].s2 > 98 && rawData[i].s3 > 98) {
+          if (dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] == null) {
+            dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] = 1;
+          } else {
+            dataCount["q3_" + rawData[i].q3 + "-" + "sNull"] += 1;
+          }
+          if (dataCount["sNull" + "-" + "q6_" + rawData[i].q6] == null) {
+            dataCount["sNull" + "-" + "q6_" + rawData[i].q6] = 1;
+          } else {
+            dataCount["sNull" + "-" + "q6_" + rawData[i].q6] += 1;
+          }
+        }
+        if (dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] == null) {
+          dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] = 1;
+        } else {
+          dataCount["q6_" + rawData[i].q6 + "-" + "q8_" + rawData[i].q8] += 1;
+        }
+
+        if (dataCount["q8_" + rawData[i].q8 + "-" + "q10_" + rawData[i].q10] == null) {
+          dataCount["q8_" + rawData[i].q8 + "-" + "q10_" + rawData[i].q10] = 1;
+        } else {
+          dataCount["q8_" + rawData[i].q8 + "-" + "q10_" + rawData[i].q10] += 1;
+        }
+
+        if (dataCount["q10_" + rawData[i].q10 + "-" + "q12_" + rawData[i].q12] == null) {
+          dataCount["q10_" + rawData[i].q10 + "-" + "q12_" + rawData[i].q12] = 1;
+        } else {
+          dataCount["q10_" + rawData[i].q10 + "-" + "q12_" + rawData[i].q12] += 1;
+        }
+      }
+    } else {
+      for (var i = 0; i < selectedData.length; i++) {
+        if (dataCount["q2_" + selectedData[i].q2 + "-" + "q3_" + selectedData[i].q3] == null) {
+          dataCount["q2_" + selectedData[i].q2 + "-" + "q3_" + selectedData[i].q3] = 1;
+        } else {
+          dataCount["q2_" + selectedData[i].q2 + "-" + "q3_" + selectedData[i].q3] += 1;
+        }
+
+        if (selectedData[i].s1 < 99) {
+          if (dataCount["q3_" + selectedData[i].q3 + "-" + "s1_" + selectedData[i].s1] == null) {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s1_" + selectedData[i].s1] = 1;
+          } else {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s1_" + selectedData[i].s1] += 1;
+          }
+
+          if (dataCount["s1_" + selectedData[i].s1 + "-" + "q6_" + selectedData[i].q6] == null) {
+            dataCount["s1_" + selectedData[i].s1 + "-" + "q6_" + selectedData[i].q6] = 1;
+          } else {
+            dataCount["s1_" + selectedData[i].s1 + "-" + "q6_" + selectedData[i].q6] += 1;
+          }
+        }
+
+        if (selectedData[i].s2 < 99) {
+          if (dataCount["q3_" + selectedData[i].q3 + "-" + "s2_" + selectedData[i].s2] == null) {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s2_" + selectedData[i].s2] = 1;
+          } else {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s2_" + selectedData[i].s2] += 1;
+          }
+          if (dataCount["s2_" + selectedData[i].s2 + "-" + "q6_" + selectedData[i].q6] == null) {
+            dataCount["s2_" + selectedData[i].s2 + "-" + "q6_" + selectedData[i].q6] = 1;
+          } else {
+            dataCount["s2_" + selectedData[i].s2 + "-" + "q6_" + selectedData[i].q6] += 1;
+          }
+        }
+
+        if (selectedData[i].s3 < 99) {
+          if (dataCount["q3_" + selectedData[i].q3 + "-" + "s3_" + selectedData[i].s3] == null) {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s3_" + selectedData[i].s3] = 1;
+          } else {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "s3_" + selectedData[i].s3] += 1;
+          }
+          if (dataCount["s3_" + selectedData[i].s3 + "-" + "q6_" + selectedData[i].q6] == null) {
+            dataCount["s3_" + selectedData[i].s3 + "-" + "q6_" + selectedData[i].q6] = 1;
+          } else {
+            dataCount["s3_" + selectedData[i].s3 + "-" + "q6_" + selectedData[i].q6] += 1;
+          }
+        }
+
+        if (selectedData[i].s1 > 98 && selectedData[i].s2 > 98 && selectedData[i].s3 > 98) {
+          if (dataCount["q3_" + selectedData[i].q3 + "-" + "sNull"] == null) {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "sNull"] = 1;
+          } else {
+            dataCount["q3_" + selectedData[i].q3 + "-" + "sNull"] += 1;
+          }
+          if (dataCount["sNull" + "-" + "q6_" + selectedData[i].q6] == null) {
+            dataCount["sNull" + "-" + "q6_" + selectedData[i].q6] = 1;
+          } else {
+            dataCount["sNull" + "-" + "q6_" + selectedData[i].q6] += 1;
+          }
+        }
+        if (dataCount["q6_" + selectedData[i].q6 + "-" + "q8_" + selectedData[i].q8] == null) {
+          dataCount["q6_" + selectedData[i].q6 + "-" + "q8_" + selectedData[i].q8] = 1;
+        } else {
+          dataCount["q6_" + selectedData[i].q6 + "-" + "q8_" + selectedData[i].q8] += 1;
+        }
+
+        if (dataCount["q8_" + selectedData[i].q8 + "-" + "q10_" + selectedData[i].q10] == null) {
+          dataCount["q8_" + selectedData[i].q8 + "-" + "q10_" + selectedData[i].q10] = 1;
+        } else {
+          dataCount["q8_" + selectedData[i].q8 + "-" + "q10_" + selectedData[i].q10] += 1;
+        }
+
+        if (dataCount["q10_" + selectedData[i].q10 + "-" + "q12_" + selectedData[i].q12] == null) {
+          dataCount["q10_" + selectedData[i].q10 + "-" + "q12_" + selectedData[i].q12] = 1;
+        } else {
+          dataCount["q10_" + selectedData[i].q10 + "-" + "q12_" + selectedData[i].q12] += 1;
+        }
+      }
+    }
+  }
+
+  d3.csv("data_kaori/ver1.csv", function(csv) {
+    csv.forEach(function(d) {
+      var t = 0;
+      for (var i = 0; i < sumFields.length; i++) {
+        t += Number(d[sumFields[i]]);
+      }
+      if (t > 0) {
+        rawData.push(d);
+      }
+    })
+
+    //to calculate strength of the raw data
+
+
+
+    // dataSelection();
+    // selectpath(0, 250);
+
+
+    chart = Highcharts.chart('container', {
+      title: {
+        text: 'Emotional Analytics of Fragrance'
+      },
+      credits: {
+        enabled: false
+      },
+      plotOptions: {
+        series: {
+          animation: {
+            duration: 2000
+          }
+        }
+      },
+      tooltip: {
+        valueDecimals: 0
+      },
+      loading: {
+        hideDuration: 1000,
+        showDuration: 1200,
+        labelStyle: {
+          fontSize: "xx-large"
+        }
+      },
+      series: [{
+        keys: ['from', 'to', 'weight'],
+        nodeWidth: 40,
+        point: {
+          // 鼠标划过节点时高亮相连的连接节点
+          events: {
+            mouseOver: function() {
+              if (this.isNode) {
+                Highcharts.each(this.linksFrom, function(p) {
+                  var newColor = new Highcharts.color(p.color).setOpacity(1);
+                  p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+                });
+                Highcharts.each(this.linksTo, function(p) {
+                  var newColor = new Highcharts.color(p.color).setOpacity(1);
+                  p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+                });
+              }
+            },
+            mouseOut: function() {
+              if (this.isNode) {
+                Highcharts.each(this.linksFrom, function(p) {
+                  var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+                  p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+                });
+                Highcharts.each(this.linksTo, function(p) {
+                  var newColor = new Highcharts.color(p.color).setOpacity(0.5);
+                  p.graphic.element.setAttribute('fill', 'rgba(' + newColor.rgba.join() + ')');
+                });
+              }
+            }
+          }
+        },
+        data: data,
+        type: 'sankey',
+        name: "sumFields",
+        turboThreshold: 4000
+      }]
+
+    });
+
+    $('#run').on('click', function(e) {
+      chart.showLoading();
+      for (var i = 0; i < 7; i++) {
+        data = [];
+        dataSelection(layer, factor);
+        selectpath(min, max);
+
+        chart.series[0].update({
+          data: data
+        }, false);
+        chart.redraw();
+      }
+      setTimeout(function() {
+        chart.hideLoading();
+      }, 1000);
+      console.log(signForSelect, selectedData.length, data.length, data);
+    })
+  })
+</script>
+
+<script>
+  $("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("toggled");
+  });
+</script>
+
+<script>
+  $("#ex2").slider({
+    ticks: [0, 50, 100, 150, 200]
+  });
+
+  $("#ex2").on("slide", function(slideEvt) {
+    min = slideEvt.value[0];
+    max = slideEvt.value[1];
+  });
+
+  $("#selectLayer").change(function() {
+    layer = $(this).val(); //获取当前事件标签的值
+
+    $("#selectFactor").change(function() {
+      factor = $(this).val(); //获取当前事件标签的值
+    })
+  })
+</script>
